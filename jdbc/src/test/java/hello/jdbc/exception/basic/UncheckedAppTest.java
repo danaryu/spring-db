@@ -18,6 +18,16 @@ public class UncheckedAppTest {
                 .isInstanceOf(RuntimeSQLException.class); // 예외가 올라온 것을 확인 가능
     }
 
+    @Test
+    void printEx() {
+        Controller controller = new Controller();
+        try {
+            controller.request();
+        } catch (Exception e) {
+            log.info("ex", e);
+        }
+    }
+
     static class Controller {
         Service service = new Service();
 

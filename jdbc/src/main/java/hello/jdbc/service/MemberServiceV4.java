@@ -18,7 +18,7 @@ import java.sql.SQLException;
 public class MemberServiceV4 {
     private final MemberRepository memberRepository;
 
-    public MemberServiceV4(MemberRepository memberRepository) {
+    public MemberSer₩viceV4(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 

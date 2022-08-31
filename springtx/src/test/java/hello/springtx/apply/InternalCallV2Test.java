@@ -1,5 +1,6 @@
 package hello.springtx.apply;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,13 @@ import javax.transaction.Transactional;
 
 @Slf4j
 @SpringBootTest
-public class InternalCallV1Test {
+public class InternalCallV2Test {
 
     @Autowired
     CallService callService;
+
+    @Autowired
+    InternalService internalService;
 
     @Test
     void printProxy() {
@@ -23,12 +27,7 @@ public class InternalCallV1Test {
     }
 
     @Test
-    void internalCall() {
-        callService.internal(); // Trasaction 시작
-    }
-
-    @Test
-    void externalCall() {
+    void externalCallV2() {
         callService.external();
     }
 
@@ -36,17 +35,36 @@ public class InternalCallV1Test {
     static class InternalCallV1TestConfig {
 
         @Bean
+        InternalService internalService() {
+            return new InternalService();
+        }
+
+        @Bean
         CallService callService() {
-            return new CallService();
+            return new CallService(internalService());
         }
     }
 
+    @RequiredArgsConstructor
     static class CallService {
+
+        private final InternalService internalService;
+
         public void external() {
             log.info("call external");
             printTxInfo();
-            internal(); // Transaction이 없는 method 에서 Transaction이 있는 method 호출
+            internalService.internal(); // Transaction이 없는 method 에서 Transaction이 있는 method 호출
         }
+
+        public void printTxInfo() {
+            boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
+            log.info("tx active={}", txActive);
+            boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+            log.info("tx readOnly={}", readOnly);
+        }
+    }
+
+    static class InternalService {
 
         @Transactional
         public void internal() {
@@ -58,8 +76,7 @@ public class InternalCallV1Test {
             boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
             log.info("tx active={}", txActive);
             boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
-            log.info("tx readOnly={}", readOnly);
+            log.info("tx readOnly={}, readOnly");
         }
     }
-
 }

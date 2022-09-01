@@ -1,6 +1,7 @@
 package hello.springtx.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +17,21 @@ public class RollbackTest {
 
     @Test
     void runtimeException() {
-        service.runtimeException();
+        Assertions.assertThatThrownBy(() -> service.runtimeException())
+                        .isInstanceOf(RuntimeException.class);
     }
 
+   @Test
+    void checkedException() {
+        Assertions.assertThatThrownBy(() -> service.checkedException())
+                        .isInstanceOf(MyException.class);
+    }
+
+   @Test
+    void rollbackFor() {
+        Assertions.assertThatThrownBy(() -> service.rollbackFor())
+                        .isInstanceOf(MyException.class);
+    }
 
     @TestConfiguration
     static class RollbackTestConfig {

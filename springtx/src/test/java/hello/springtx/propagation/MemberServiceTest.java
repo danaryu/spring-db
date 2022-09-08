@@ -51,7 +51,7 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.joinV1(username))
                 .isInstanceOf(RuntimeException.class);
 
-        //then : member는 정상 저장, log는 비어있다.
+        //then : member는 정상 commit, log는 rollback
         assertTrue(memberRepository.findByUsername(username).isPresent());
         assertTrue(logRepository.findByMessage(username).isEmpty());
     }
@@ -93,5 +93,23 @@ class MemberServiceTest {
         assertTrue(logRepository.findByMessage(username).isPresent());
     }
 
+    /**
+     * memberService        @Transactional:ON == transaction manager -> rollback
+     * memberRepository     @Transactional:ON
+     * logRepository        @Transactional:ON Exception == rollbackOnly mark
+     */
+    @Test
+    void outerTxOn_fail() {
+        //given
+        String username = "로그예외_outerTxOn_fail";
+
+        //when
+        assertThatThrownBy(() -> memberService.joinV1(username))
+                .isInstanceOf(RuntimeException.class);
+
+        //then : 모든 데이터가 rollback 된다.
+        assertTrue(memberRepository.findByUsername(username).isEmpty());
+        assertTrue(logRepository.findByMessage(username).isEmpty());
+    }
 
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -65,6 +66,24 @@ class MemberServiceTest {
     void singleTx() {
         //given
         String username = "outerTxOff_success";
+
+        //when
+        memberService.joinV1(username);
+
+        //then : 모든 데이터가 정상 저장된다.
+        assertTrue(memberRepository.findByUsername(username).isPresent());
+        assertTrue(logRepository.findByMessage(username).isPresent());
+    }
+
+    /**
+     * memberService        @Transactional:ON -- 신규 트랜잭션
+     * memberRepository     @Transactional:ON -- 신규 트랜잭션 X == 실제 commit X
+     * logRepository        @Transactional:ON -- 신규 트랜잭션 X == 실제 commit X
+     */
+    @Test
+    void outerTxOn_success() {
+        //given
+        String username = "outerTxOn_success";
 
         //when
         memberService.joinV1(username);
